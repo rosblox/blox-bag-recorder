@@ -15,17 +15,37 @@ services:
     ports:
       - 8080:8080
     restart: always
+    
+  ros-foxglove-bridge:
+    image: ghcr.io/rosblox/ros-foxglove-bridge:humble
+    restart: always
+    network_mode: "host"
+    ipc: host
+    pid: host
+    environment:
+      - UID=${HOST_UID}
+    command: su - ros /run.sh
 
   ros-rosbridge-suite:
     image: ghcr.io/rosblox/ros-rosbridge-suite:humble
-    ports:
-      - 9090:9090
     restart: always
-    command: ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+    network_mode: "host"
+    ipc: host
+    pid: host
+    environment:
+      - UID=${HOST_UID}
+    command: su - ros /run.sh
 
   ros-bag-recorder:
     image: ghcr.io/rosblox/ros-bag-recorder:humble
     restart: always
+    network_mode: "host"
+    privileged: true
+    ipc: host
+    pid: host
+    environment:
+      - UID=${HOST_UID}
+      - ROS_DOMAIN_ID
     volumes:
-      - /home/${USER}/bags:/bags
-    command: ros2 run bag_recorder bag_recorder
+      - ~/rosblox/bags:/bags
+    command: su - ros --whitelist-environment=ROS_DOMAIN_ID /run.sh
